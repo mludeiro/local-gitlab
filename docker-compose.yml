@@ -1,0 +1,39 @@
+version: '3.6'
+services:
+  locallab:
+    image: 'gitlab/gitlab-ce:latest'
+    container_name: locallab
+    hostname: locallab
+    ports:
+      - 80:80
+      - 443:443
+      - 22:22
+    volumes:
+      - ./gitlab_config:/etc/gitlab
+      - gitlab_logs:/var/log/gitlab
+      - gitlab_data:/var/opt/gitlab
+      - ./ssl:/etc/gitlab/ssl
+    shm_size: '2gb'
+    networks:
+      - gitlab-network
+
+  localrunner:
+    image: 'gitlab/gitlab-runner:latest'
+    container_name: localrunner
+    hostname: localrunner
+    depends_on:
+      - locallab
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./gitlab-runner:/etc/gitlab-runner
+      - ./ssl:/etc/gitlab-runner/certs
+    networks:
+      - gitlab-network
+
+volumes:
+  gitlab_logs: {}
+  gitlab_data: {}
+
+networks:
+  gitlab-network:
+    name: gitlab-network
