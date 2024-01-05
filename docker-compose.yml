@@ -9,10 +9,15 @@ services:
       - 443:443
       - 22:22
     volumes:
-      - ./gitlab_config:/etc/gitlab
+      - ./config:/etc/gitlab
       - gitlab_logs:/var/log/gitlab
       - gitlab_data:/var/opt/gitlab
-      - ./ssl:/etc/gitlab/ssl
+#      - ./ssl:/etc/gitlab/ssl
+    environment:
+      EXTERNAL_URL: http://locallab
+      GITLAB_ROOT_PASSWORD: testing1234
+      GITLAB_OMNIBUS_CONFIG: |
+        puma['worker_processes'] = 0
     shm_size: '2gb'
     networks:
       - gitlab-network
@@ -22,11 +27,12 @@ services:
     container_name: localrunner
     hostname: localrunner
     depends_on:
-      - locallab
+      locallab:
+        condition: service_healthy
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
-      - ./gitlab-runner:/etc/gitlab-runner
-      - ./ssl:/etc/gitlab-runner/certs
+      - ./runner:/etc/gitlab-runner
+#      - ./ssl:/etc/gitlab-runner/certs
     networks:
       - gitlab-network
 
